@@ -1,0 +1,12 @@
+[coverage:run]
+source = recruiit
+omit =
+    */wsgi.py
+    */settings.py
+    */**/migrations/*.py
+    */**/tests/*.py
+    */**/apps.py
+    */**/admin.py
+    */**/urls.py
+[coverage:report]
+omit = */tests/*,recruiit/wsgi.py
