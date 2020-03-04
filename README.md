@@ -1,4 +1,4 @@
-# Recruiit
+# ![Recruiit](https://res.cloudinary.com/nogsantos/image/upload/v1583341771/recruiit/large_recruiit.png)
 
 Workflow para análise e seleção de candidatos
 
