@@ -6,9 +6,8 @@ staticfiles
 temp
 .idea
 
-.recruiit
 output_test.*
-
+*.pdf
 ### Python ###
 # Byte-compiled / optimized / DLL files
 __pycache__/

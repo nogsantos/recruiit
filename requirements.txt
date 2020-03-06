@@ -79,3 +79,11 @@ wcwidth==0.1.7
 webencodings==0.5.1
 widgetsnbextension==3.5.1
 zipp==0.6.0
+PyPDF2==1.26.0
+textract==1.6.3
+nltk==3.4.5
+Werkzeug==1.0.0
+regex==2020.2.20
+pandas
+numpy
+slate3k
