@@ -1,0 +1,28 @@
+key_words = {
+    "javascript",
+    "es6",
+    "html",
+    "css",
+    "sass",
+    "npm",
+    "node.js",
+    "vue.js",
+    "flexbox",
+    "ui/ux",
+    "api",
+    "rest",
+    "restful"
+    "git",
+    "gitlab",
+    "jasmine",
+    "jest",
+    "mocha",
+    "figma",
+    "sketch",
+    "illustrator",
+    "kanban",
+    "scrum",
+    "frontend",
+    "ingles",
+    "linux"
+}

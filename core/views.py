@@ -4,6 +4,8 @@ import re
 import PyPDF2
 import numpy as np
 import pandas as pd
+from .forbidden_words import forbidden_words
+from .key_words import key_words
 import slate3k as slate
 from django.core.files.storage import FileSystemStorage
 from rest_framework import viewsets, status, views
@@ -22,11 +24,10 @@ class HealthCheckViewSet(viewsets.ViewSet):
         try:
             name = self.request.query_params.get("name", None)
             filename = f'{settings.BASE_DIR}/docs/{name}.pdf'
-            # filename = ''
 
             pdf_file_obj = open(filename, 'rb')
-            pdf_reader = slate.PDF(pdf_file_obj)
-            #PyPDF2.PdfFileReader(pdf_file_obj)
+            # pdf_reader = slate.PDF(pdf_file_obj)
+            pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
             num_pages = pdf_reader.numPages
 
             count = 0
@@ -40,21 +41,18 @@ class HealthCheckViewSet(viewsets.ViewSet):
             enc_text = text.encode('ascii', 'ignore').lower()
             text = f'{enc_text}'
 
-            keywords = re.findall(r'[a-zA-Z]\w+', text)
+            words = re.findall(r'[a-zA-Z]\w+', text)
 
-            df = pd.DataFrame(list(set(keywords)), columns=['keywords'])
+            df = pd.DataFrame(list(set(words)), columns=['words'])
 
-            df['number_of_times_word_appeared'] = (
-                df['keywords'].apply(lambda x: self.weightage(x, text)[0])
-            )
-            df['tf'] = df['keywords'].apply(lambda x: self.weightage(x, text)[1])
-            df['idf'] = df['keywords'].apply(lambda x: self.weightage(x, text)[2])
-            df['tf_idf'] = (
-                df['keywords'].apply(lambda x: self.weightage(x, text)[3])
-            )
+            df['number_of_times_word_appeared'] = (df['words'].apply(lambda x: self.weightage(x, text)[0]))
+            # df['tf'] = df['keywords'].apply(lambda x: self.weightage(x, text)[1])
+            # df['idf'] = df['keywords'].apply(lambda x: self.weightage(x, text)[2])
+            # df['tf_idf'] = (df['keywords'].apply(lambda x: self.weightage(x, text)[3]))
 
-            df = df.sort_values('tf_idf', ascending=True)
-            df.head(25)
+            df = df.sort_values('number_of_times_word_appeared', ascending=False)
+
+            self.score_cv(text)
 
             return Response(df, status=status.HTTP_200_OK)
         except Exception as e:
@@ -64,10 +62,36 @@ class HealthCheckViewSet(viewsets.ViewSet):
         word_list = re.findall(word, text)
         number_of_times_word_appeared = len(word_list)
         tf = number_of_times_word_appeared / float(len(text))
-        idf = np.log(
-            (number_of_documents) / float(number_of_times_word_appeared))
+        idf = np.log((number_of_documents) / float(number_of_times_word_appeared))
         tf_idf = tf * idf
         return number_of_times_word_appeared, tf, idf, tf_idf
+
+    def score_cv(self, text):
+
+        if self.get_forbidden_words_number(text) != 0:
+            print("Nota:", 0)
+        else:
+            print("Nota:", self.get_score(text))
+
+        print("Key Words:", self.get_key_words_number(text))
+        print("Forbbiden Words:", self.get_forbidden_words_number(text))
+
+    def get_key_words_number(self, text):
+        return int(self.sum_words(key_words, text))
+
+    def get_forbidden_words_number(self, text):
+        return int(self.sum_words(forbidden_words, text))
+
+    def sum_words(self, arr, text):
+        sum_words = 0
+
+        for word in arr:
+            sum_words += len(re.findall(word, text))
+
+        return sum_words
+
+    def get_score(self, text):
+        return float(self.get_key_words_number(text) / len(key_words)) * 100
 
 
 class FileUploadView(views.APIView):
