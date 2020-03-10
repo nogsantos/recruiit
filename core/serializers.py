@@ -11,6 +11,7 @@ class CandidateSerializer(serializers.ModelSerializer):
             'public_id',
             'name',
             'email',
+            'grade',
             'phone',
             'resume',
             'status',

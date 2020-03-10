@@ -87,7 +87,7 @@ class CandidateViewSet(viewsets.ModelViewSet):
                 'phone': f'{candidate.phone}',
             })
 
-            self.score_cv(text)
+            self.score_cv(text, candidate)
 
             return Response(df, status=status.HTTP_200_OK)
         except Exception as e:
@@ -103,29 +103,38 @@ class CandidateViewSet(viewsets.ModelViewSet):
         tf_idf = tf * idf
         return number_of_times_word_appeared, tf, idf, tf_idf
 
-    def score_cv(self, text):
+    def score_cv(self, text, candidate: Candidate):
         _timer = 7
+
         if self.get_forbidden_words_number(text) != 0:
             self._send_mail('reproved', "Candidatura Rejeitada", _timer, {
-                'name': 'Candidato',
-                'email': 'candidato@test.com'
+                'name': f'{candidate.name}',
+                'email': f'{candidate.email}',
             })
+
+            candidate.status = 'reproved'
+            candidate.grade = 0
         else:
             score = self.get_score(text)
+            candidate.grade = score
 
-            if score >= 50.0:
+            if score >= 20.0:
                 self._send_mail('approved', "Aprovado para próxima fase",
                                 _timer,
                                 {
-                                    'name': 'Candidato',
-                                    'email': 'candidato@test.com'
+                                    'name': f'{candidate.name}',
+                                    'email': f'{candidate.email}',
                                 })
-            # else:
+                candidate.status = 'approved'
+            else:
+                candidate.status = 'quarantine'
             #     self._send_mail('quarantine', "Processo Seletivo Encerrado",
             #                     20.0, {
             #                         'name': 'Candidato',
             #                         'email': 'candidato@test.com'
             #                     })
+
+        candidate.save()
 
     def get_key_words_number(self, text):
         return int(self.sum_words(key_words, text))

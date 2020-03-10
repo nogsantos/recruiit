@@ -25,5 +25,6 @@ class Candidate(BaseModel):
     email = models.CharField(max_length=250)
     phone = models.CharField(max_length=250)
     resume = models.CharField(max_length=250)
+    grade = models.CharField(max_length=250, blank=True)
     status = models.CharField(max_length=30, choices=STATUS,
                               default=STATUS[0][0])
