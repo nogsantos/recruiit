@@ -86,3 +86,4 @@ regex==2020.2.20
 pandas
 numpy
 slate3k
+django-cors-headers==3.2.1

@@ -3,10 +3,11 @@ from django.conf.urls import url
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from core.views import HealthCheckViewSet, FileUploadView
+from core.views import HealthCheckViewSet, FileUploadView, CandidateViewSet
 
 routers = DefaultRouter()
-routers.register('', HealthCheckViewSet, base_name='core')
+routers.register('', HealthCheckViewSet, basename='core')
+routers.register(r'admin', CandidateViewSet, basename='admin')
 
 urlpatterns = [
     path('', include(routers.get_urls())),

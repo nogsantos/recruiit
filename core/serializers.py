@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
-"""
 from rest_framework import serializers
 
-from core.models import Category
+from core.models import Candidate
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CandidateSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Category
+        model = Candidate
         fields = (
-            'id',
+            'public_id',
             'name',
-            'description',
+            'email',
+            'phone',
+            'resume',
+            'status',
             'created_at',
             'updated_at',
         )
-"""

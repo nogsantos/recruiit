@@ -1,6 +1,5 @@
 import os
 
-
 from unipath import Path
 from decouple import config, Csv
 from dj_database_url import parse as dburl
@@ -26,6 +25,8 @@ DJANGO_APPS = [
 THIRD_PARTY_APPS = [
     'rest_framework',
     'django_extensions',
+    'corsheaders',
+    'django_filters',
     'drf_yasg',
 ]
 
@@ -43,6 +44,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
 ]
 
 ROOT_URLCONF = 'recruiit.urls'
@@ -65,7 +67,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'recruiit.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/2.2/ref/settings/#databases
 
@@ -79,16 +80,20 @@ DATABASES = {
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'  # noqa: E501
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'
+        # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'   # noqa: E501
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'
+        # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'  # noqa: E501
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'
+        # noqa: E501
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'  # noqa: E501
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'
+        # noqa: E501
     },
 ]
 
@@ -101,7 +106,7 @@ LOGGING = {
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s '
-            '%(process)d %(thread)d %(message)s'
+                      '%(process)d %(thread)d %(message)s'
         },
     },
     'handlers': {
@@ -153,7 +158,8 @@ CORS_ALLOW_HEADERS = (
 )
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',  # noqa
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    # noqa
     'PAGE_SIZE': 10
 }
 

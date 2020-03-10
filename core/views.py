@@ -7,14 +7,28 @@ import pandas as pd
 from .forbidden_words import forbidden_words
 from .key_words import key_words
 import slate3k as slate
+from django.conf import settings
 from django.core.files.storage import FileSystemStorage
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, views
 from rest_framework.decorators import action
 from rest_framework.exceptions import ParseError
+from rest_framework.filters import OrderingFilter
 from rest_framework.parsers import FileUploadParser
 from rest_framework.response import Response
 
-from django.conf import settings
+from core.models import Candidate
+from core.serializers import CandidateSerializer
+
+
+class CandidateViewSet(viewsets.ModelViewSet):
+    serializer_class = CandidateSerializer
+    filter_backends = (OrderingFilter, DjangoFilterBackend)
+    filterset_fields = ['status', 'name']
+
+    def get_queryset(self):
+        queryset = Candidate.objects.all()
+        return queryset
 
 
 class HealthCheckViewSet(viewsets.ViewSet):
@@ -26,7 +40,7 @@ class HealthCheckViewSet(viewsets.ViewSet):
             filename = f'{settings.BASE_DIR}/docs/{name}.pdf'
 
             pdf_file_obj = open(filename, 'rb')
-            # pdf_reader = slate.PDF(pdf_file_obj)
+
             pdf_reader = PyPDF2.PdfFileReader(pdf_file_obj)
             num_pages = pdf_reader.numPages
 
@@ -38,19 +52,18 @@ class HealthCheckViewSet(viewsets.ViewSet):
                 count += 1
                 text += page_obj.extractText()
 
-            enc_text = text.encode('ascii', 'ignore').lower()
+            enc_text = text.lower()
             text = f'{enc_text}'
 
-            words = re.findall(r'[a-zA-Z]\w+', text)
+            words = re.findall(r'[a-zA-Z]\w+', text, re.UNICODE)
 
             df = pd.DataFrame(list(set(words)), columns=['words'])
 
-            df['number_of_times_word_appeared'] = (df['words'].apply(lambda x: self.weightage(x, text)[0]))
-            # df['tf'] = df['keywords'].apply(lambda x: self.weightage(x, text)[1])
-            # df['idf'] = df['keywords'].apply(lambda x: self.weightage(x, text)[2])
-            # df['tf_idf'] = (df['keywords'].apply(lambda x: self.weightage(x, text)[3]))
+            df['number_of_times_word_appeared'] = (
+                df['words'].apply(lambda x: self.weightage(x, text)[0]))
 
-            df = df.sort_values('number_of_times_word_appeared', ascending=False)
+            df = df.sort_values('number_of_times_word_appeared',
+                                ascending=False)
 
             self.score_cv(text)
 
@@ -60,9 +73,11 @@ class HealthCheckViewSet(viewsets.ViewSet):
 
     def weightage(self, word, text, number_of_documents=1):
         word_list = re.findall(word, text)
+
         number_of_times_word_appeared = len(word_list)
         tf = number_of_times_word_appeared / float(len(text))
-        idf = np.log((number_of_documents) / float(number_of_times_word_appeared))
+        idf = np.log(
+            (number_of_documents) / float(number_of_times_word_appeared))
         tf_idf = tf * idf
         return number_of_times_word_appeared, tf, idf, tf_idf
 
