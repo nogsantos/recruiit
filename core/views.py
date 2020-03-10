@@ -42,18 +42,17 @@ class CandidateViewSet(viewsets.ModelViewSet):
             return Response(serializer.errors,
                             status=status.HTTP_400_BAD_REQUEST)
 
-        serializer.save()
+        candidate = serializer.save()
+
+        self.read_key_words(candidate)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-
-class HealthCheckViewSet(viewsets.ViewSet):
-
-    @action(methods=['GET'], detail=False, url_path='read')
-    def read_key_words(self, request, pk=None):
+    # @action(methods=['GET'], detail=False, url_path='read')
+    def read_key_words(self, candidate: Candidate):
         try:
-            name = self.request.query_params.get("name", None)
-            filename = f'{settings.BASE_DIR}/docs/{name}.pdf'
+            # name = self.request.query_params.get("name", None)
+            filename = f'{settings.BASE_DIR}/docs/{candidate.resume}'
 
             pdf_file_obj = open(filename, 'rb')
 
@@ -82,10 +81,10 @@ class HealthCheckViewSet(viewsets.ViewSet):
                                 ascending=False)
 
             # Email confirmando submissão de currículo
-            self._send_mail('subscription', "Inscrição Confirmada", 10.0, {
-                'name': 'Candidato',
-                'email': 'candidato@test.com',
-                'phone': '46 9999-999',
+            self._send_mail('subscription', "Inscrição Confirmada", 0, {
+                'name': f'{candidate.name}',
+                'email': f'{candidate.email}',
+                'phone': f'{candidate.phone}',
             })
 
             self.score_cv(text)
@@ -105,9 +104,9 @@ class HealthCheckViewSet(viewsets.ViewSet):
         return number_of_times_word_appeared, tf, idf, tf_idf
 
     def score_cv(self, text):
-
+        _timer = 7
         if self.get_forbidden_words_number(text) != 0:
-            self._send_mail('reproved', "Candidatura Rejeitada", 20.0, {
+            self._send_mail('reproved', "Candidatura Rejeitada", _timer, {
                 'name': 'Candidato',
                 'email': 'candidato@test.com'
             })
@@ -115,15 +114,18 @@ class HealthCheckViewSet(viewsets.ViewSet):
             score = self.get_score(text)
 
             if score >= 50.0:
-                self._send_mail('approved', "Aprovado para próxima fase", 20.0, {
-                    'name': 'Candidato',
-                    'email': 'candidato@test.com'
-                })
-            else:
-                self._send_mail('quarantine', "Processo Seletivo Encerrado", 20.0, {
-                    'name': 'Candidato',
-                    'email': 'candidato@test.com'
-                })
+                self._send_mail('approved', "Aprovado para próxima fase",
+                                _timer,
+                                {
+                                    'name': 'Candidato',
+                                    'email': 'candidato@test.com'
+                                })
+            # else:
+            #     self._send_mail('quarantine', "Processo Seletivo Encerrado",
+            #                     20.0, {
+            #                         'name': 'Candidato',
+            #                         'email': 'candidato@test.com'
+            #                     })
 
     def get_key_words_number(self, text):
         return int(self.sum_words(key_words, text))
@@ -160,6 +162,11 @@ class HealthCheckViewSet(viewsets.ViewSet):
         })
 
         thr.start()
+
+
+class HealthCheckViewSet(viewsets.ViewSet):
+    pass
+
 
 class FileUploadView(views.APIView):
     parser_class = (FileUploadParser,)
