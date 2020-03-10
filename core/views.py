@@ -160,4 +160,5 @@ class FileUploadView(views.APIView):
         _dir = f'{settings.BASE_DIR}/docs/'
         fs = FileSystemStorage(location=_dir, file_permissions_mode=0o600)
         fs.save(f.name, f)
+        
         return Response(status=status.HTTP_201_CREATED)
