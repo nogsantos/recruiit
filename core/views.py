@@ -4,6 +4,7 @@ import re
 import PyPDF2
 import numpy as np
 import pandas as pd
+from threading import Timer
 from django.conf import settings
 from django.core import mail
 from django.core.files.storage import FileSystemStorage
@@ -84,6 +85,13 @@ class HealthCheckViewSet(viewsets.ViewSet):
             df = df.sort_values('number_of_times_word_appeared',
                                 ascending=False)
 
+            # Email confirmando submissão de currículo
+            self._send_mail('subscription', "Inscrição Confirmada", 10.0, {
+                'name': 'Candidato',
+                'email': 'candidato@test.com',
+                'phone': '46 9999-999',
+            })
+
             self.score_cv(text)
 
             return Response(df, status=status.HTTP_200_OK)
@@ -103,18 +111,23 @@ class HealthCheckViewSet(viewsets.ViewSet):
     def score_cv(self, text):
 
         if self.get_forbidden_words_number(text) != 0:
-            print("Nota:", 0)
+            self._send_mail('reproved', "Candidatura Rejeitada", 20.0, {
+                'name': 'Candidato',
+                'email': 'candidato@test.com'
+            })
         else:
-            print("Nota:", self.get_score(text))
+            score = self.get_score(text)
 
-        self._send_confirmed_subscription_mail({
-            'name': 'test',
-            'email': 'test@test.com',
-            'phone': '46 9999-999',
-        })
-
-        print("Key Words:", self.get_key_words_number(text))
-        print("Forbbiden Words:", self.get_forbidden_words_number(text))
+            if score >= 50.0:
+                self._send_mail('approved', "Aprovado para próxima fase", 20.0, {
+                    'name': 'Candidato',
+                    'email': 'candidato@test.com'
+                })
+            else:
+                self._send_mail('quarantine', "Processo Seletivo Encerrado", 20.0, {
+                    'name': 'Candidato',
+                    'email': 'candidato@test.com'
+                })
 
     def get_key_words_number(self, text):
         return int(self.sum_words(key_words, text))
@@ -133,21 +146,24 @@ class HealthCheckViewSet(viewsets.ViewSet):
     def get_score(self, text):
         return float(self.get_key_words_number(text) / len(key_words)) * 100
 
-    def _send_confirmed_subscription_mail(self, context):
-        template = 'subscriptions/email'
+    def _send_mail(self, filename, subject, interval, context):
+        template = f'email/{filename}'
         html_body = render_to_string(f'{template}.html', context)
         txt_body = render_to_string(f'{template}.txt', context)
-        mail.send_mail(
-            subject="Inscrição Confirmada",
-            message=txt_body,
-            html_message=html_body,
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            recipient_list=[
+
+        # Intervalo em segundos para enviar e-mail
+        thr = Timer(interval=interval, function=mail.send_mail, kwargs={
+            "subject": subject,
+            "message": txt_body,
+            "html_message": html_body,
+            "from_email": settings.DEFAULT_FROM_EMAIL,
+            "recipient_list": [
                 settings.DEFAULT_FROM_EMAIL,
                 context['email']
             ],
-        )
+        })
 
+        thr.start()
 
 class FileUploadView(views.APIView):
     parser_class = (FileUploadParser,)
