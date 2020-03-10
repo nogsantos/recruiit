@@ -1,0 +1,6 @@
+Ol&aacute; {{ name }}!
+Muito obrigado por se candidatar &agrave; uma de nossas vagas!
+
+Agradecemos sua participa&ccedil;&atilde;o, mas no momento suas skills n&atilde;o atendem todos os requisitos da vaga
+
+ Mas n&atilde;o se abale, seu curr&iacute;culo est&aacute; armazenado em nossa base e ser&aacute; utilizado em futuras oportunidades

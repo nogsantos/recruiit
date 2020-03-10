@@ -1,0 +1,12 @@
+Ol&aacute; {{ name }}!
+
+Parab&eacute;ns, voc&ecirc; foi selecionado para prosseguir com nosso processo seletivo
+
+Abaixo preparamos um exerc&iacute;cio para avaliarmos seus conhecimentos t&eacute;cnicos para a vaga.
+https://gitlab.instruct.com.br/exercicios/cached-users
+
+Aguardamos sua resposta para podermos continuar nosso processo
+
+Atenciosamente,
+--
+Instruct

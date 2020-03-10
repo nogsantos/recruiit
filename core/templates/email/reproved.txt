@@ -1,0 +1,12 @@
+Ol&aacute; {{ name }}!
+Muito obrigado por se candidatar &agrave; uma de nossas vagas!
+
+Seu curr&iacute;culo passou por uma an&aacute;lise e no momento, visando preservar a sa&uacute;de mental do
+recrutador, optamos por n&atildeo continuar com seu processo seletivo.
+
+Mas n&atildeo desista, constantemente estamos com vagas abertas e
+quem sabe um dia (com muita sorte) voc&ecirc; far&aacute; parte do nosso time.
+
+Atenciosamente,
+--
+Instruct
