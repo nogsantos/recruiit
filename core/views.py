@@ -33,18 +33,14 @@ class CandidateViewSet(viewsets.ModelViewSet):
         return queryset
 
     def create(self, request, **kwargs):
-        parser_class = (FileUploadParser,)
-
         serializer = self.get_serializer(
             data=request.data,
             context=self.get_serializer_context()
         )
-        serializer.is_valid(raise_exception=True)
 
-        f = request.data['file']
-        _dir = f'{settings.BASE_DIR}/docs/'
-        fs = FileSystemStorage(location=_dir, file_permissions_mode=0o600)
-        fs.save(f.name, f)
+        if not serializer.is_valid():
+            return Response(serializer.errors,
+                            status=status.HTTP_400_BAD_REQUEST)
 
         serializer.save()
 
@@ -176,5 +172,5 @@ class FileUploadView(views.APIView):
         _dir = f'{settings.BASE_DIR}/docs/'
         fs = FileSystemStorage(location=_dir, file_permissions_mode=0o600)
         fs.save(f.name, f)
-        
+
         return Response(status=status.HTTP_201_CREATED)
