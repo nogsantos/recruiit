@@ -1,0 +1,14 @@
+Ol&aacute; {{ name }}!
+Muito obrigado por inscrever-se
+
+Nome:&nbsp;{{ name }}
+Email:&nbsp;{{ email }}
+Telefone:&nbsp;{{ phone }}
+
+Em at&eacute; poucos dias, nossa
+equipe entrar&aacute; em contato com voc&ecirc;
+sobre o andamento do processo
+
+Atenciosamente,
+--
+Instruct

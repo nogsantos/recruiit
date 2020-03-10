@@ -4,11 +4,10 @@ import re
 import PyPDF2
 import numpy as np
 import pandas as pd
-from .forbidden_words import forbidden_words
-from .key_words import key_words
-import slate3k as slate
 from django.conf import settings
+from django.core import mail
 from django.core.files.storage import FileSystemStorage
+from django.template.loader import render_to_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, views
 from rest_framework.decorators import action
@@ -19,6 +18,8 @@ from rest_framework.response import Response
 
 from core.models import Candidate
 from core.serializers import CandidateSerializer
+from .forbidden_words import forbidden_words
+from .key_words import key_words
 
 
 class CandidateViewSet(viewsets.ModelViewSet):
@@ -29,6 +30,24 @@ class CandidateViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         queryset = Candidate.objects.all()
         return queryset
+
+    def create(self, request, **kwargs):
+        parser_class = (FileUploadParser,)
+
+        serializer = self.get_serializer(
+            data=request.data,
+            context=self.get_serializer_context()
+        )
+        serializer.is_valid(raise_exception=True)
+
+        f = request.data['file']
+        _dir = f'{settings.BASE_DIR}/docs/'
+        fs = FileSystemStorage(location=_dir, file_permissions_mode=0o600)
+        fs.save(f.name, f)
+
+        serializer.save()
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class HealthCheckViewSet(viewsets.ViewSet):
@@ -88,6 +107,12 @@ class HealthCheckViewSet(viewsets.ViewSet):
         else:
             print("Nota:", self.get_score(text))
 
+        self._send_confirmed_subscription_mail({
+            'name': 'test',
+            'email': 'test@test.com',
+            'phone': '46 9999-999',
+        })
+
         print("Key Words:", self.get_key_words_number(text))
         print("Forbbiden Words:", self.get_forbidden_words_number(text))
 
@@ -107,6 +132,21 @@ class HealthCheckViewSet(viewsets.ViewSet):
 
     def get_score(self, text):
         return float(self.get_key_words_number(text) / len(key_words)) * 100
+
+    def _send_confirmed_subscription_mail(self, context):
+        template = 'subscriptions/email'
+        html_body = render_to_string(f'{template}.html', context)
+        txt_body = render_to_string(f'{template}.txt', context)
+        mail.send_mail(
+            subject="Inscrição Confirmada",
+            message=txt_body,
+            html_message=html_body,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[
+                settings.DEFAULT_FROM_EMAIL,
+                context['email']
+            ],
+        )
 
 
 class FileUploadView(views.APIView):
